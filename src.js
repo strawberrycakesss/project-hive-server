@@ -1,0 +1,16 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import api from './routes/api.js';
+import {logger,notFound,errorHandler} from './middleware/index.js';
+const app=express();
+app.use(cors({origin:process.env.CLIENT_URL||'http://localhost:5173'}));
+app.use(express.json());
+app.use(logger);
+app.get('/api/health',(req,res)=>res.json({status:'ok'}));
+app.use(api);
+app.use(notFound);
+app.use(errorHandler);
+const port=process.env.PORT||5000;
+mongoose.connect(process.env.MONGO_URI).then(()=>app.listen(port,()=>console.log(`API running on http://localhost:${port}`))).catch(err=>{console.error('MongoDB connection failed',err);process.exit(1)});
